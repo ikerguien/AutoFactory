@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.20.6.final using JasperReports Library version 6.20.6-5c96b6aa8a39ac1dc6b6bea4b81168e16dd39231  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ReportFicha" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="b8c7856c-bbf2-4bae-ad21-8564cac4bd85">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OracleLocal"/>
+	<style name="FilaAlterna" isDefault="true" forecolor="#030303"/>
+	<parameter name="ID_PRODUCTO_PADRE" class="java.math.BigDecimal"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT 
+    p_item.IT_NOM AS NOMBRE_PADRE,      -- El jefe
+    pi.PI_IT_CODI AS ID_HIJO,          -- El código que querías
+    c_item.IT_NOM AS NOMBRE_HIJO,      -- El nombre de la pieza
+    c_item.IT_TIPUS AS TIPO_HIJO,      -- ¡Aquí está el tipo de vuelta!
+    pi.PI_QUANTITAT AS CANTIDAD,
+    NVL(um.NOM, 'unid.') AS UNIDAD_MEDIDA
+FROM PROD_ITEM pi
+JOIN ITEM p_item ON pi.PI_PR_CODI = p_item.IT_CODI
+JOIN ITEM c_item ON pi.PI_IT_CODI = c_item.IT_CODI
+LEFT JOIN COMPONENT c ON c_item.IT_CODI = c.CM_CODI
+LEFT JOIN UNITAT_MESURA um ON c.CM_UM_CODI = um.CODI_MESURA
+WHERE pi.PI_PR_CODI = $P{ID_PRODUCTO_PADRE}
+ORDER BY c_item.IT_TIPUS DESC, c_item.IT_NOM ASC]]>
+	</queryString>
+	<field name="NOMBRE_PADRE" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="NOMBRE_PADRE"/>
+		<property name="com.jaspersoft.studio.field.label" value="NOMBRE_PADRE"/>
+	</field>
+	<field name="ID_HIJO" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="ID_HIJO"/>
+		<property name="com.jaspersoft.studio.field.label" value="ID_HIJO"/>
+	</field>
+	<field name="NOMBRE_HIJO" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="NOMBRE_HIJO"/>
+		<property name="com.jaspersoft.studio.field.label" value="NOMBRE_HIJO"/>
+	</field>
+	<field name="TIPO_HIJO" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="TIPO_HIJO"/>
+		<property name="com.jaspersoft.studio.field.label" value="TIPO_HIJO"/>
+	</field>
+	<field name="CANTIDAD" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="CANTIDAD"/>
+		<property name="com.jaspersoft.studio.field.label" value="CANTIDAD"/>
+	</field>
+	<field name="UNIDAD_MEDIDA" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="UNIDAD_MEDIDA"/>
+		<property name="com.jaspersoft.studio.field.label" value="UNIDAD_MEDIDA"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="80" splitType="Stretch">
+			<textField>
+				<reportElement x="220" y="10" width="130" height="30" uuid="ddd2365d-cd01-45c0-93b2-1912c6ac63ba"/>
+				<textElement>
+					<font size="20" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["AutoFactory"]]></textFieldExpression>
+			</textField>
+			<textField pattern="M/d/yy h:mm a">
+				<reportElement x="440" y="10" width="100" height="30" uuid="643f76e9-e026-42f4-95aa-d0025d92c79e"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="92" splitType="Stretch">
+			<textField>
+				<reportElement x="200" y="0" width="160" height="30" uuid="70250916-4b20-43e9-8685-ac75fa3d1f95"/>
+				<textElement>
+					<font size="20"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{NOMBRE_PADRE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="50" y="60" width="100" height="30" uuid="8de225f0-6ab4-477b-9290-2ad8f82c24db"/>
+				<textFieldExpression><![CDATA["ID:"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="170" y="60" width="100" height="30" uuid="b3c8e0c7-a42b-468d-9691-d7bf6a7fc8f0"/>
+				<textFieldExpression><![CDATA["NOM"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="320" y="60" width="60" height="30" uuid="3917c3d3-d515-4e77-a942-c482f6cf380c"/>
+				<textFieldExpression><![CDATA["TIPUS"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="400" y="60" width="60" height="30" uuid="be09cd4d-cd39-4d80-9882-84fcf346847d"/>
+				<textFieldExpression><![CDATA["UNITAT"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="490" y="60" width="60" height="30" uuid="46df167e-4f73-47fe-b217-623d580cd965"/>
+				<textFieldExpression><![CDATA["QUANTITAT"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="44" splitType="Stretch">
+			<textField>
+				<reportElement x="400" y="10" width="60" height="30" uuid="c9c14df9-e4e4-46b0-b003-84461ab75aec"/>
+				<textFieldExpression><![CDATA[$F{UNIDAD_MEDIDA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="490" y="10" width="50" height="30" uuid="cfd193cc-596f-47e9-ad47-1a5a3be43b67"/>
+				<textFieldExpression><![CDATA[$F{CANTIDAD}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="170" y="10" width="100" height="30" uuid="01d6cc83-7030-48f3-9b66-6b51d3fbe804"/>
+				<textFieldExpression><![CDATA[$F{NOMBRE_HIJO}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="330" y="10" width="60" height="30" uuid="4afc8259-7967-4dd4-8bc7-5cdbc74d27d0"/>
+				<textFieldExpression><![CDATA[$F{TIPO_HIJO}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="50" y="10" width="100" height="30" uuid="aba7bde6-143d-4797-97be-b6d3f9fb9c3c"/>
+				<textFieldExpression><![CDATA[$F{ID_HIJO}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="73" splitType="Stretch">
+			<textField evaluationTime="Report">
+				<reportElement x="460" y="40" width="50" height="30" uuid="b8d12728-6911-49af-a68b-aadde53a6971"/>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="400" y="40" width="70" height="30" uuid="72a38afd-2469-4538-b243-eb8073968185"/>
+				<textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER} + " de "]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>
