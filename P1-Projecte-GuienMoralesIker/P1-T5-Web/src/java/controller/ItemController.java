@@ -236,4 +236,13 @@ public class ItemController {
     public List<UnitatMesura> obtenerUnidades() {
         return daoUM.MostrarTots();
     }
+    
+    /**
+    * Obté un component per el seu identificador.
+    * @param id Identificador del component
+    * @return Component trobat o null si no existeix
+    */
+   public Component obtenerComponentPorId(int id) {
+       return DAOFactory.getDAOComponent().MostrarPerId(id);
+   }
 }

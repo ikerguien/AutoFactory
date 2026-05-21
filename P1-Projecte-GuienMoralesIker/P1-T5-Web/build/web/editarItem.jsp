@@ -39,7 +39,7 @@
     List<UnitatMesura> unitats = null;
     List<Proveidor> proveidors = null;
     if ("C".equalsIgnoreCase(item.getItTipus())) {
-        component = (Component) itemController.obtenerItemPorId(codigo);
+        component = itemController.obtenerComponentPorId(codigo);
         unitats = itemController.obtenerUnidades();
         proveidors = itemController.obtenerProveedores();
     }
@@ -54,13 +54,20 @@
     <style>
         .bom-nivell-1 { background: #f8f9fa; }
         .bom-nivell-1 td:first-child::before { content: "↳ "; color: #3498db; }
-        .bom-header { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px 5px 0 0; margin-top: 20px; }
+        .bom-header {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px 5px 0 0;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="sidebar">
-        <img src="${pageContext.request.contextPath}/assets/img/logo.png" alt="Logo">
+        <img src="${pageContext.request.contextPath}/assets/img/logo.png" alt="Logo"
+             style="mix-blend-mode: multiply;">
         <form action="login.jsp" method="POST">
             <button type="submit" class="btn-logout">➜ Logout</button>
         </form>
@@ -81,30 +88,39 @@
         <div class="form-wrapper" style="margin-top:15px;">
             <h1>✏️ Editar: <%= item.getItNom() %></h1>
 
+            <%-- ===== FORMULARI PRINCIPAL: guardar canvis ===== --%>
             <form action="guardarItem.jsp" method="post">
                 <input type="hidden" name="id" value="<%= item.getItCodi() %>">
                 <input type="hidden" name="tipo" value="<%= item.getItTipus() %>">
+                <input type="hidden" name="accion" value="guardar">
 
                 <label>Codi (no editable)</label>
                 <input type="text" value="<%= item.getItCodi() %>" readonly>
 
                 <label>Tipus (no editable)</label>
-                <input type="text" value="<%= "P".equals(item.getItTipus()) ? "Producte" : "Component" %>" readonly>
+                <input type="text"
+                       value="<%= "P".equals(item.getItTipus()) ? "Producte" : "Component" %>"
+                       readonly>
 
                 <label>Nom: *</label>
-                <input type="text" name="nombre" value="<%= item.getItNom() %>" required maxlength="30">
+                <input type="text" name="nombre"
+                       value="<%= item.getItNom() %>" required maxlength="30">
 
                 <label>Descripció: *</label>
-                <input type="text" name="descripcion" value="<%= item.getItDescripio() %>" required maxlength="50">
+                <input type="text" name="descripcion"
+                       value="<%= item.getItDescripio() %>" required maxlength="50">
 
                 <label>Stock: *</label>
-                <input type="number" name="stock" value="<%= item.getItStock() %>" required min="0">
+                <input type="number" name="stock"
+                       value="<%= item.getItStock() %>" required min="0">
 
+                <%-- Imatge actual --%>
                 <label>Imatge actual</label>
                 <div class="img-container">
                     <% if (item.getItFoto() != null && item.getItFoto().length > 0) {
                         String base64Image = Base64.getEncoder().encodeToString(item.getItFoto()); %>
-                        <img src="data:image/jpeg;base64,<%= base64Image %>" class="preview-img" alt="Foto">
+                        <img src="data:image/jpeg;base64,<%= base64Image %>"
+                             class="preview-img" alt="Foto">
                     <% } else { %>
                         <p style="color:#aaa; font-size:0.9em;">Sense imatge</p>
                     <% } %>
@@ -121,7 +137,8 @@
 
                     <label>Codi Fabricant: *</label>
                     <input type="text" name="cmCodiFabricant"
-                           value="<%= component.getCmCodiFabricant() != null ? component.getCmCodiFabricant() : "" %>"
+                           value="<%= component.getCmCodiFabricant() != null
+                                      ? component.getCmCodiFabricant() : "" %>"
                            required maxlength="20">
 
                     <label>Unitat de Mesura:</label>
@@ -129,7 +146,8 @@
                         <option value="">-- Selecciona --</option>
                         <% if (unitats != null) { for (UnitatMesura u : unitats) { %>
                         <option value="<%= u.getCodiMesura() %>"
-                            <%= (component.getCmUmCodi() == u.getCodiMesura()) ? "selected" : "" %>>
+                            <%= (component.getCmUmCodi() == u.getCodiMesura())
+                                ? "selected" : "" %>>
                             <%= u.getNom() %>
                         </option>
                         <% } } %>
@@ -137,11 +155,13 @@
 
                     <label>Preu mig (gestionat automàticament):</label>
                     <input type="text" value="<%= component.getCmPreuMig() %> €" readonly>
-                    <small style="color:#777;">El preu es recalcula automàticament via trigger de BD.</small>
+                    <small style="color:#777;">
+                        El preu es recalcula automàticament via trigger de BD.
+                    </small>
                 </div>
                 <% } %>
 
-                <%-- BOM — NOMÉS PRODUCTES --%>
+                <%-- BOM — QUANTITATS (dins el form principal per guardar-les) --%>
                 <% if ("P".equalsIgnoreCase(item.getItTipus())) { %>
                 <div class="section-producte" style="margin-top:20px;">
                     <div class="bom-header">
@@ -160,7 +180,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <% for (Item s : subitems) { %>
+                        <% for (Item s : subitems) { %>
                             <tr>
                                 <td><%= s.getItCodi() %></td>
                                 <td>
@@ -177,17 +197,31 @@
                                     <% } %>
                                 </td>
                                 <td>
-                                    <input type="number" name="cantidad_<%= s.getItCodi() %>"
-                                           value="<%= s.getCantidad() %>" min="1" style="width:70px;">
+                                    <%-- Quantitat dins el form principal per guardar-la --%>
+                                    <input type="number"
+                                           name="cantidad_<%= s.getItCodi() %>"
+                                           value="<%= s.getCantidad() %>"
+                                           min="1" style="width:70px;">
                                 </td>
                                 <td>
-                                    <button type="submit" name="eliminar" value="<%= s.getItCodi() %>"
-                                            class="btn-danger" style="padding:5px 10px;"
-                                            onclick="return confirm('Eliminar <%= s.getItNom() %> del BOM?');">
-                                        🗑️
-                                    </button>
+                                    <%-- FORMULARI PROPI per eliminar subitem del BOM --%>
+                                    <form action="guardarItem.jsp" method="post"
+                                          style="display:inline;">
+                                        <input type="hidden" name="id"
+                                               value="<%= item.getItCodi() %>">
+                                        <input type="hidden" name="tipo"
+                                               value="<%= item.getItTipus() %>">
+                                        <input type="hidden" name="eliminar"
+                                               value="<%= s.getItCodi() %>">
+                                        <button type="submit" class="btn-danger"
+                                                style="padding:5px 10px;"
+                                                onclick="return confirm('Eliminar <%= s.getItNom() %> del BOM?');">
+                                            🗑️
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
+
                             <%-- Nivell 2: fills del subproducte --%>
                             <% if ("P".equals(s.getItTipus())) {
                                 List<Item> fills = itemController.obtenerItemsDelProducto(s.getItCodi());
@@ -209,52 +243,80 @@
                                 </td>
                             </tr>
                             <% } } } %>
-                            <% } %>
+
+                        <% } %>
                         </tbody>
                     </table>
                     <% } else { %>
-                    <p style="color:#777; padding:15px;">Aquest producte no té subitems encara.</p>
+                    <p style="color:#777; padding:15px;">
+                        Aquest producte no té subitems encara.
+                    </p>
                     <% } %>
-
-                    <%-- Afegir nou subitem --%>
-                    <div style="margin-top:20px;">
-                        <h4>➕ Afegir nou subitem</h4>
-                        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
-                            <div style="flex:2;">
-                                <label>Item:</label>
-                                <select name="nuevoSubitem">
-                                    <option value="">-- Selecciona --</option>
-                                    <% for (Item t : todosItems) {
-                                        boolean yaExiste = (t.getItCodi() == item.getItCodi());
-                                        if (!yaExiste && subitems != null) {
-                                            for (Item s : subitems) {
-                                                if (s.getItCodi() == t.getItCodi()) { yaExiste = true; break; }
-                                            }
-                                        }
-                                        if (!yaExiste) { %>
-                                    <option value="<%= t.getItCodi() %>">
-                                        <%= t.getItNom() %>
-                                        (<%= "P".equals(t.getItTipus()) ? "Producte" : "Component" %>)
-                                    </option>
-                                    <% } } %>
-                                </select>
-                            </div>
-                            <div style="width:90px;">
-                                <label>Quantitat:</label>
-                                <input type="number" name="cantidadNuevo" value="1" min="1">
-                            </div>
-                            <button type="submit" name="accion" value="añadir" class="btn-success">
-                                + Afegir
-                            </button>
-                        </div>
-                    </div>
                 </div>
                 <% } %>
 
-                <button type="submit" name="accion" value="guardar" class="btn-save" style="margin-top:20px;">
-                    💾 GUARDAR CANVIS
-                </button>
+                <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;">
+                    <button type="submit" class="btn-save" style="flex:1;">
+                        💾 GUARDAR CANVIS
+                    </button>
+                    <% if ("P".equalsIgnoreCase(item.getItTipus())) { %>
+                        <a href="generarReporte.jsp?codigo=<%= item.getItCodi() %>"
+                           class="btn-primary" target="_blank"
+                           style="display:flex; align-items:center; padding:10px 10px;
+                                  text-decoration:none; border-radius:5px; font-size:16px;">
+                            Generar Informe PDF
+                        </a>
+                    <% } %>
+                </div>
             </form>
+
+            <%-- ===== FORMULARI SEPARAT: afegir subitem ===== --%>
+            <%-- Separat del principal per evitar que validi nom/stock/etc --%>
+            <% if ("P".equalsIgnoreCase(item.getItTipus())) { %>
+            <div class="section-producte" style="margin-top:20px;">
+                <h4 style="margin-bottom:15px;">➕ Afegir nou subitem al BOM</h4>
+                <form action="guardarItem.jsp" method="post"
+                      style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+                    <input type="hidden" name="id" value="<%= item.getItCodi() %>">
+                    <input type="hidden" name="tipo" value="<%= item.getItTipus() %>">
+                    <input type="hidden" name="accion" value="añadir">
+
+                    <div style="flex:2;">
+                        <label>Item a afegir:</label>
+                        <select name="nuevoSubitem" required>
+                            <option value="">-- Selecciona --</option>
+                            <% for (Item t : todosItems) {
+                                boolean yaExiste = (t.getItCodi() == item.getItCodi());
+                                if (!yaExiste && subitems != null) {
+                                    for (Item s : subitems) {
+                                        if (s.getItCodi() == t.getItCodi()) {
+                                            yaExiste = true; break;
+                                        }
+                                    }
+                                }
+                                if (!yaExiste) { %>
+                            <option value="<%= t.getItCodi() %>">
+                                <%= t.getItNom() %>
+                                (<%= "P".equals(t.getItTipus()) ? "Producte" : "Component" %>)
+                            </option>
+                            <% } } %>
+                        </select>
+                    </div>
+
+                    <div style="width:100px;">
+                        <label>Quantitat:</label>
+                        <input type="number" name="cantidadNuevo"
+                               value="1" min="1" required>
+                    </div>
+
+                    <button type="submit" class="btn-success"
+                            style="height:42px; padding:0 15px;">
+                        + Afegir
+                    </button>
+                </form>
+            </div>
+            <% } %>
+
         </div>
     </div>
 </div>

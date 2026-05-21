@@ -172,6 +172,26 @@
         if (!id) { alert("Selecciona un item de la llista."); return; }
         if (isNaN(cantidad) || cantidad <= 0) { alert("La quantitat ha de ser positiva."); return; }
 
+        // ===== COMPROVACIÓ DE DUPLICAT =====
+        var existents = document.querySelectorAll('.fila-subitem input[type="hidden"][name="subitem_id[]"]');
+        for (var i = 0; i < existents.length; i++) {
+            if (existents[i].value === id) {
+                // Si ja existeix, sumem la quantitat
+                var fila = existents[i].parentElement;
+                var inputCantExistent = fila.querySelector('input[name="subitem_cantidad[]"]');
+                var cantActual = parseInt(inputCantExistent.value);
+                var novaCant = cantActual + cantidad;
+                inputCantExistent.value = novaCant;
+                // Actualitzem el text visible
+                var span = fila.querySelector('span');
+                var nomBase = span.textContent.split(' — ')[0];
+                span.innerHTML = nomBase + ' — <strong>x' + novaCant + '</strong>';
+                combo.value = "";
+                inputCant.value = 1;
+                return;
+            }
+        }
+
         if (msgBuit) msgBuit.style.display = 'none';
 
         var nuevaFila = document.createElement("div");
@@ -187,7 +207,6 @@
         combo.value = "";
         inputCant.value = 1;
     }
-
     function comprovarBuit() {
         var files = document.querySelectorAll('.fila-subitem');
         var msgBuit = document.getElementById('msg_buit');

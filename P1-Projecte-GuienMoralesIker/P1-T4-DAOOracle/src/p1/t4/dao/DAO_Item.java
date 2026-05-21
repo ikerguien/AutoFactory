@@ -239,26 +239,51 @@ public int eliminarTodosSubitemsDeProducto(int prodCodi) {
     // 6. Eliminar un item por su código
 @Override
 public int Eliminar(int itCodi) {
-    // 1. Buscamos si el item aparece como componente (hijo) en algún producto
-    String checkQuery = "SELECT COUNT(*) FROM PROD_ITEM WHERE PI_IT_CODI = ?";
-    String deleteQuery = "DELETE FROM ITEM WHERE IT_CODI = ?";
-    
     try (Connection conn = Connexio.getConnection()) {
-        // Comprobación de integridad
-        try (PreparedStatement psCheck = conn.prepareStatement(checkQuery)) {
-            psCheck.setInt(1, itCodi);
-            try (ResultSet rs = psCheck.executeQuery()) {
-                if (rs.next() && rs.getInt(1) > 0) {
-                    // El item está contenido en la tabla PROD_ITEM, no se puede borrar
-                    return -1; 
-                }
+        
+        // 1. Comprovar si és fill d'algun producte (no es pot eliminar)
+        try (PreparedStatement ps = conn.prepareStatement(
+                "SELECT COUNT(*) FROM PROD_ITEM WHERE PI_IT_CODI = ?")) {
+            ps.setInt(1, itCodi);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                return -1; // Té dependències, no es pot eliminar
             }
         }
 
-        // Si no hay dependencias, procedemos al borrado
-        try (PreparedStatement psDelete = conn.prepareStatement(deleteQuery)) {
-            psDelete.setInt(1, itCodi);
-            return psDelete.executeUpdate(); // Retornará 1 si borró con éxito
+        // 2. Si és producte, eliminar els seus subitems de PROD_ITEM
+        try (PreparedStatement ps = conn.prepareStatement(
+                "DELETE FROM PROD_ITEM WHERE PI_PR_CODI = ?")) {
+            ps.setInt(1, itCodi);
+            ps.executeUpdate();
+        }
+
+        // 3. Si és component, eliminar els seus proveïdors de PROV_COMP
+        try (PreparedStatement ps = conn.prepareStatement(
+                "DELETE FROM PROV_COMP WHERE PC_CM_IT_CODI = ?")) {
+            ps.setInt(1, itCodi);
+            ps.executeUpdate();
+        }
+
+        // 4. Eliminar de COMPONENT (si és component)
+        try (PreparedStatement ps = conn.prepareStatement(
+                "DELETE FROM COMPONENT WHERE CM_CODI = ?")) {
+            ps.setInt(1, itCodi);
+            ps.executeUpdate();
+        }
+
+        // 5. Eliminar de PRODUCTE (si és producte)
+        try (PreparedStatement ps = conn.prepareStatement(
+                "DELETE FROM PRODUCTE WHERE PR_CODI = ?")) {
+            ps.setInt(1, itCodi);
+            ps.executeUpdate();
+        }
+
+        // 6. Finalment eliminar de ITEM
+        try (PreparedStatement ps = conn.prepareStatement(
+                "DELETE FROM ITEM WHERE IT_CODI = ?")) {
+            ps.setInt(1, itCodi);
+            return ps.executeUpdate();
         }
 
     } catch (SQLException e) {
